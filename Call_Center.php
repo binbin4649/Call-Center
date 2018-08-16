@@ -30,20 +30,13 @@ class Call_Center extends AppModel{
 	public $text3;
 	public $text4;
 	
-/*
-	public function __construct($responsePath){
-		$this->responsePath = $responsePath;
-	}
-*/
-	
-	public function test(){
-		//$this->log('tukaeru?');
-		var_dump(APP);
-	}
 	
 	public function basicResponse(){
 		$response = new Twiml;
-		$text = $this->mypageName.$this->text1;
+		$text = $this->text1;
+		if(!empty($this->text2)) $text .= $this->text2;
+		if(!empty($this->text3)) $text .= $this->text3;
+		if(!empty($this->text4)) $text .= $this->text4;
 		$text_array = $this->textToVoice($text);
 		$text_count = count($text_array);
 		foreach($text_array as $wav_name){
@@ -132,6 +125,21 @@ class Call_Center extends AppModel{
 		return $response;
 	}
 	
+	public function onceResponse(){
+		$response = new Twiml;
+		$text = $this->text1;
+		if(!empty($this->text2)) $text .= $this->text2;
+		if(!empty($this->text3)) $text .= $this->text3;
+		if(!empty($this->text4)) $text .= $this->text4;
+		$text_array = $this->textToVoice($text);
+		$text_count = count($text_array);
+		foreach($text_array as $wav_name){
+			$response->play($this->wavPath.$wav_name);
+			$text_count--;
+			if($text_count <> 0) $response->pause(array("length" => 1));
+		}
+		return $response;
+	}
 	
 	public function noResponse(){
 		$response = new Twiml;
@@ -140,6 +148,54 @@ class Call_Center extends AppModel{
 		));
 		return $response;
 	}
+	
+	public function callOut($response_url, $to){
+		if(Configure::read('MccPlugin.TEST_MODE')){
+			$test_numbers = Configure::read('MccPlugin.TEST_NUMBER');
+			if(array_search($to, $test_numbers) === false) return 'test_mode';
+		}
+		$sid = Configure::read('MccPlugin.TwilioSid');
+		$token = Configure::read('MccPlugin.TwilioToken');
+		$fromNumber = Configure::read('MccPlugin.TwilioFromNumber');
+		$twilio = new Client($sid, $token);
+		$int_to = $this->toInternational($to);
+		$url = $this->responsePath.$response_url;
+		
+		//timeout 入れなくとも１分くらいは鳴ってる。電話機によるんだろうけど。
+		$call = $twilio->calls->create($int_to, $fromNumber, ['url' => $url, 'timeout' => 40]);
+		return $call->sid;
+	}
+	
+	public function getTwilioLog($call_sid){
+		if(Configure::read('MccPlugin.TEST_MODE')){
+			if($call_sid == 'test_mode') return 'test_mode';
+		}
+		$sid = Configure::read('MccPlugin.TwilioSid');
+		$token = Configure::read('MccPlugin.TwilioToken');
+		$twilio = new Client($sid, $token);
+		
+		//ログ取得
+		$call = $twilio->calls($call_sid)->fetch();
+		
+		//ログ整形
+		$to = $this->toDomestic($call->to);
+		if($call->status == 'completed'){
+			$status = '応答あり';
+		}elseif($call->status == 'no-answer'){
+			$status = '応答なし';
+		}elseif($call->status == 'busy'){
+			$status = 'ビジー信号';
+		}else{
+			$status = $call->status;
+		}
+		$call->startTime->setTimezone(new DateTimeZone('Asia/Tokyo'));
+		$startTime = $call->startTime->format('Y-m-d H:i:s');
+		$duration = $call->duration;
+		
+		$log = '開始:'.$startTime.' To:'.$to.' ステータス:'.$status.' 通話時間:'.$duration.'秒'."\n";
+		return $log;
+	}
+	
 	
 	public function textToVoice($text = null){
 		$return_arr = array();
@@ -183,7 +239,7 @@ class Call_Center extends AppModel{
 					);
 					$result = $manager->create(APP.'Plugin/'.$this->pluginName.'/webroot/files/wav/'.$enc_tex.'.wav', $parameters);
 					if($result <> 200){
-						$this->log('MccCall.php textToVoice error. :'.print_r($result, true));
+						$this->log('Call-Center textToVoice error. :'.print_r($result, true));
 					}
 					$return_arr[] = $enc_tex.'.wav';
 				}
@@ -278,5 +334,29 @@ class Call_Center extends AppModel{
 		return $ret;
 	}
 	
+	//http://qiita.com/kakk_a/items/19e4eeb5a6bca36bd51a
+	public function toInternational($number){
+		if (preg_match('/^[0-9]+$/', $number) && (strlen($number) == 10 || strlen($number) == 11)) {
+            return preg_replace( '/^0/', '+81', $number);
+        } else if (preg_match('/^\+81[0-9]+$/', $number) && (strlen($number) == 12 || strlen($number) == 13)) {
+        	$this->log('Call-Center toInternational no convert. : '.$number);
+            return $number;
+        } else {
+        	$this->log('Call-Center toInternational error. : '.$number);
+            return false;
+        }
+	}
 	
+	public function toDomestic($number) {
+        if (preg_match('/^\+81[0-9]+$/', $number) && (strlen($number) == 12 || strlen($number) == 13)) {
+            return preg_replace( '/^\+81/', '0', $number);
+        } else if (preg_match('/^[0-9]+$/', $number) && (strlen($number) == 10 || strlen($number) == 11)) {
+        	$this->log('Call-Center toDomestic no convert. : '.$number);
+            return $number;
+        } else {
+        	$this->log('Call-Center toDomestic error. : '.$number);
+            return false;
+        }
+    }
+    
 }
