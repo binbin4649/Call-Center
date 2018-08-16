@@ -1,0 +1,16 @@
+{
+    "name": "Call-Center",
+    "description": "baserCMS Library",
+    "keywords": ["authentication"],
+    "homepage": "https://github.com/binbin4649/Call-Center",
+    "license": "none",
+    "authors": [
+        {
+            "name": "dubmilli LLC.",
+            "homepage": "https://dubmilli.com/"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0"
+    },
+}
