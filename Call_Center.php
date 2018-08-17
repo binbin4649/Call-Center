@@ -248,6 +248,50 @@ class Call_Center extends AppModel{
 		return $return_arr;
 	}
 	
+	// ログ組立
+	public function logAssembly($call){
+		if($call['status'] == 'up'){
+			$wake = __('起床を確認。');
+		}else{
+			$wake = __('起床を確認できませんでした。');
+		}
+		$log_data = 'Plan:'.$call['call_plan'].' '.$wake."\n";
+		
+		if(!empty($call['callsid1'])){
+			$log_data .= $this->getTwilioLog($call['callsid1']);
+		}
+		if(!empty($call['callsid2'])){
+			$log_data .= $this->getTwilioLog($call['callsid2']);
+		}
+		if(!empty($call['callsid3'])){
+			$log_data .= $this->getTwilioLog($call['callsid3']);
+		}
+		if(!empty($call['callsid4'])){
+			$log_data .= $this->getTwilioLog($call['callsid4']);
+		}
+		if(!empty($call['callsid5'])){
+			$log_data .= $this->getTwilioLog($call['callsid5']);
+		}
+		if(!empty($call['callsid6'])){
+			$log_data .= $this->getTwilioLog($call['callsid6']);
+		}
+		if(!empty($call['callsid7'])){
+			$log_data .= $this->getTwilioLog($call['callsid7']);
+		}
+		
+		if($call['call_plan'] == 'premium'){
+			if($call['result'] == 'correct'){
+				$result = '正解';
+			}elseif($call['result'] == 'incorrect'){
+				$result = '不正解';
+			}else{
+				$result = '無';
+			}
+			$log_data .= '押された番号:'.$call['digits'].' '.$result."\n";
+		}
+		return $log_data;
+	}
+	
 	public function tenki($city_number){
 		$ret = array();
 		$req = "http://weather.livedoor.com/forecast/webservice/json/v1";
@@ -264,6 +308,24 @@ class Call_Center extends AppModel{
 		$ret['description'] .= 'の予報です。';
 		$ret['city_name'] = $json['title'].'、';
 		return $ret;
+	}
+	
+	//天気予報の地域を返す
+	public function weatherArea(){
+		$area = Cache::read('weather_area', 'MccCache');
+		if(!$area){
+			$xml = simplexml_load_file('http://weather.livedoor.com/forecast/rss/primary_area.xml');
+			$rss = $xml->xpath('/rss/channel/ldWeather:source/pref');
+			$area = [];
+			foreach($rss as $value){
+				$cate = (string)$value->attributes()->title;
+				foreach($value->city as $city){
+					$area[$cate][(string)$city->attributes()->id] = (string)$city->attributes()->title;
+				}
+			}
+			Cache::write('weather_area', $area, 'MccCache');
+		}
+		return $area;
 	}
 	
 	//時間切り捨て、10分単位
