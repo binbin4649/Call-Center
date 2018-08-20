@@ -251,9 +251,9 @@ class Call_Center extends AppModel{
 	// ログ組立
 	public function logAssembly($call){
 		if($call['status'] == 'up'){
-			$wake = __('起床を確認。');
+			$wake = '確認済。';
 		}else{
-			$wake = __('起床を確認できませんでした。');
+			$wake = '未確認、確認できませんでした。';
 		}
 		$log_data = 'Plan:'.$call['call_plan'].' '.$wake."\n";
 		
