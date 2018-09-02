@@ -298,6 +298,14 @@ class Call_Center extends AppModel{
 		$req .= "?city=".$city_number."&day=today";
 		$file = file_get_contents($req);
 		$json = json_decode($file, true);
+		var_dump($json);
+		die;
+		//入っていなかったら停止アナウンス
+		if(empty($json['forecasts'][0]['telop'])){
+			$ret['city_name'] = '天気予報停止中。';
+			$ret['description'] = '申し訳ありません。';
+			return $ret;
+		}
 		$ret['description'] = '今日は'.$json['forecasts'][0]['telop'].'、';
 		if(!empty($json['forecasts'][0]['temperature']['max']['celsius'])){
 			$ret['description'] .= '最高気温'.$json['forecasts'][0]['temperature']['max']['celsius'].'度、';
