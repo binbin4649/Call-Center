@@ -298,8 +298,6 @@ class Call_Center extends AppModel{
 		$req .= "?city=".$city_number."&day=today";
 		$file = file_get_contents($req);
 		$json = json_decode($file, true);
-		var_dump($json);
-		die;
 		//入っていなかったら停止アナウンス
 		if(empty($json['forecasts'][0]['telop'])){
 			$ret['city_name'] = '天気予報停止中。';
