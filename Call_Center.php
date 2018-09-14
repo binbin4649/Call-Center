@@ -293,26 +293,89 @@ class Call_Center extends AppModel{
 	}
 	
 	public function tenki($city_number){
-		$ret = array();
-		$req = "http://weather.livedoor.com/forecast/webservice/json/v1";
-		$req .= "?city=".$city_number."&day=today";
-		$file = file_get_contents($req);
-		$json = json_decode($file, true);
-		//入っていなかったら停止アナウンス
-		if(empty($json['forecasts'][0]['telop'])){
+		$ret = $this->weatherYumake($city_number);
+		if($ret == false){
+			$ret = $this->weatherLivedoor($city_number);
+		}elseif($ret == false){
 			$ret['city_name'] = '天気予報停止中。';
 			$ret['description'] = '申し訳ありません。';
-			return $ret;
 		}
-		$ret['description'] = '今日は'.$json['forecasts'][0]['telop'].'、';
-		if(!empty($json['forecasts'][0]['temperature']['max']['celsius'])){
-			$ret['description'] .= '最高気温'.$json['forecasts'][0]['temperature']['max']['celsius'].'度、';
+		return $ret;
+	}
+	
+	public function weatherYumake($city_number){
+		$ret = Cache::read('weather_yumake'.$city_number, 'MccCacheOneHour');
+		if(!$ret){
+			$key = Configure::read('MccPlugin.YUMAKE_TODAY_API_KEY');
+			if(empty($key)) return false;
+			$ret = [];
+			$ret['description'] = '';
+			//yumake用の呼び出しコード、頭2桁。
+			$code = substr($city_number, 0, 2);
+			if($code == '01' || $code == '47'){
+				//北海道、沖縄は3桁
+				$code = substr($city_number, 0, 3);
+			}
+			$req = 'https://api.yumake.jp/1.1/forecastPref.php?code='.$code.'&key='.$key.'&format=json';
+			$file = file_get_contents($req);
+			$json = json_decode($file, true);
+			if(empty($json)) return false;
+			if($json['status'] != 'success') return false;
+			foreach($json['area'] as $area){
+				if($area['areaCode'] == $city_number){
+					$ret['city_name'] = $area['areaName'].'、';
+					$ret['description'] .= $area['forecastDateName'][0].'は、';
+					$ret['description'] .= $area['weather'][0].'、';
+					$ret['description'] .= $area['windDirection'][0].'、';
+					$ret['description'] .= '降水確率、';
+					$precipitationName0 = str_replace('００', '０', $area['precipitationName'][0]);
+					$precipitationName1 = str_replace('００', '０', $area['precipitationName'][1]);
+					$ret['description'] .= $precipitationName0.$area['precipitation'][0].'パーセント、';
+					$ret['description'] .= $precipitationName1.$area['precipitation'][1].'パーセント、';
+					
+				}
+			}
+			foreach($json['temperatureStation'] as $temp){
+				if($temp['areaCodeBelong'] == $city_number){
+					if(empty($temp['type'][2]) || empty($temp['type'][3])){
+						return false;
+					}
+					$ret['description'] .= $temp['type'][2].$temp['temperature'][2].'度、';
+					$ret['description'] .= $temp['type'][3].$temp['temperature'][3].'度、';
+				}
+			}
+			if(empty($ret['city_name']) || empty('description')){
+				return false;
+			}
+			$ret['description'] .= 'の予報です。';
+			Cache::write('weather_yumake'.$city_number, $ret, 'MccCacheOneHour');
 		}
-		if(!empty($json['forecasts'][0]['temperature']['min']['celsius'])){
-			$ret['description'] .= '最低気温'.$json['forecasts'][0]['temperature']['min']['celsius'].'度、';
+		return $ret;
+	}
+	
+	public function weatherLivedoor($city_number){
+		$ret = Cache::read('weather_livedoor'.$city_number, 'MccCacheOneHour');
+		if(!$ret){
+			$ret = array();
+			$req = "http://weather.livedoor.com/forecast/webservice/json/v1";
+			$req .= "?city=".$city_number."&day=today";
+			$file = file_get_contents($req);
+			$json = json_decode($file, true);
+			//入っていなかったら停止アナウンス
+			if(empty($json['forecasts'][0]['telop'])){
+				return false;
+			}
+			$ret['description'] = '今日は'.$json['forecasts'][0]['telop'].'、';
+			if(!empty($json['forecasts'][0]['temperature']['max']['celsius'])){
+				$ret['description'] .= '最高気温'.$json['forecasts'][0]['temperature']['max']['celsius'].'度、';
+			}
+			if(!empty($json['forecasts'][0]['temperature']['min']['celsius'])){
+				$ret['description'] .= '最低気温'.$json['forecasts'][0]['temperature']['min']['celsius'].'度、';
+			}
+			$ret['description'] .= 'の予報です。';
+			$ret['city_name'] = $json['title'].'、';
+			Cache::write('weather_livedoor'.$city_number, $ret, 'MccCacheOneHour');
 		}
-		$ret['description'] .= 'の予報です。';
-		$ret['city_name'] = $json['title'].'、';
 		return $ret;
 	}
 	
