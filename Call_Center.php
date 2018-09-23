@@ -129,6 +129,10 @@ class Call_Center extends AppModel{
 		$response = new Twiml;
 		$text = $this->text1;
 		if(!empty($this->text2)) $text .= $this->text2;
+		if(!empty($this->locate)){
+			$ret = $this->tenki($this->locate);
+			$text .= $ret['city_name'].$ret['description'];
+		}
 		if(!empty($this->text3)) $text .= $this->text3;
 		if(!empty($this->text4)) $text .= $this->text4;
 		$text_array = $this->textToVoice($text);
