@@ -133,7 +133,7 @@ class Call_Center extends AppModel{
 			'finishOnKey' => '#',
 			'action' => $this->responsePath.$this->planOrder.'/'.$this->callId
 		));
-		$text .= $this->text1;
+		$text = $this->text1;
 		if(!empty($this->text2)) $text .= $this->text2;
 		if(!empty($this->locate)){
 			$ret = $this->tenki($this->locate);
