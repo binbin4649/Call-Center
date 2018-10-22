@@ -363,6 +363,7 @@ class Call_Center extends AppModel{
 					
 				}
 			}
+			//areaCodeBelong が重複することがあるみたいなので一つだけとったら終わりで、braek
 			foreach($json['temperatureStation'] as $temp){
 				if($temp['areaCodeBelong'] == $city_number){
 					if(empty($temp['type'][2]) || empty($temp['type'][3])){
@@ -370,6 +371,7 @@ class Call_Center extends AppModel{
 					}
 					$ret['description'] .= $temp['type'][2].$temp['temperature'][2].'度、';
 					$ret['description'] .= $temp['type'][3].$temp['temperature'][3].'度、';
+					break;
 				}
 			}
 			if(empty($ret['city_name']) || empty('description')){
