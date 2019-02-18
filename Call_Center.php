@@ -149,6 +149,31 @@ class Call_Center extends AppModel{
 		return $response;
 	}
 	
+	// number_only用
+	public function longConfResponse(){
+		$response = new Twiml;
+		$gather = $response->gather(array(
+			'numDigits' => 8,
+			'timeout' => 30,
+			'finishOnKey' => '#',
+			'action' => $this->responsePath.$this->planOrder.'/'.$this->callId
+		));
+		$text = $this->text1;
+		if(!empty($this->text2)) $text .= $this->text2;
+		if(!empty($this->locate)){
+			$ret = $this->tenki($this->locate);
+			$text .= $ret['city_name'].$ret['description'];
+		}
+		if(!empty($this->text3)) $text .= $this->text3;
+		if(!empty($this->text4)) $text .= $this->text4;
+		$text_array = $this->textToVoice($text);
+		foreach($text_array as $wav_name){
+			$gather->play($this->wavPath.$wav_name);
+			$gather->pause(array("length" => 1));
+		}
+		return $response;
+	}
+	
 	public function onceResponse(){
 		$response = new Twiml;
 		$text = $this->text1;
@@ -226,6 +251,9 @@ class Call_Center extends AppModel{
 	
 	
 	public function textToVoice($text = null){
+		if(Configure::read('MccPlugin.TEST_MODE')){
+			return ['test1.wav', 'test2.wav'];
+		}
 		$return_arr = array();
 		$key = Configure::read('MccPlugin.VoiceText_OPTION_API_KEY');
 		$options = array(VoiceText::OPTION_API_KEY => $key);
