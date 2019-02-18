@@ -149,14 +149,21 @@ class Call_Center extends AppModel{
 		return $response;
 	}
 	
-	// number_only用
+	// Nos number_only用
 	public function longConfResponse(){
 		$response = new Twiml;
+		if(empty($this->callId) && empty($this->planOrder)){
+			$action_url = $this->responsePath;
+		}elseif(empty($this->callId) && !empty($this->planOrder)){
+			$action_url = $this->responsePath.$this->planOrder;
+		}else{
+			$action_url = $this->responsePath.$this->planOrder.'/'.$this->callId;
+		}
 		$gather = $response->gather(array(
 			'numDigits' => 8,
 			'timeout' => 30,
 			'finishOnKey' => '#',
-			'action' => $this->responsePath.$this->planOrder.'/'.$this->callId
+			'action' => $action_url
 		));
 		$text = $this->text1;
 		if(!empty($this->text2)) $text .= $this->text2;
