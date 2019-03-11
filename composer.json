@@ -1,9 +1,8 @@
 {
-    "name": "Call-Center",
+    "name": "binbin4649/Call-Center",
     "description": "baserCMS Library",
-    "keywords": ["authentication"],
     "homepage": "https://github.com/binbin4649/Call-Center",
-    "license": "none",
+    "license": "MIT",
     "authors": [
         {
             "name": "dubmilli LLC.",
