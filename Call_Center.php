@@ -19,8 +19,6 @@ class Call_Center extends AppModel{
 	
 	public $callId;
 	
-	public $mypageName;
-	
 	public $locate;
 	
 	public $addMp3;
@@ -66,7 +64,7 @@ class Call_Center extends AppModel{
 			//天気予報なし
 			$text = '今日は、'.$datetext.',時刻は、'.$timetext.'です。';
 		}
-		$text .= $this->mypageName.$this->text1;
+		$text .= $this->text1;
 		$text_array = $this->textToVoice($text);
 		foreach($text_array as $wav_name){
 			$gather->play($this->wavPath.$wav_name);
