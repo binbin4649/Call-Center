@@ -477,6 +477,7 @@ class Call_Center extends AppModel{
 	    }
 	}
 	
+	//祝日（振替含む）年末年始
 	// return to view/MccCall/index.php
 	public function getBankHoliday(){
 		$bankholiday = Cache::read('bank_holiday', 'MccCache');
@@ -506,18 +507,8 @@ class Call_Center extends AppModel{
 	
 	//指定月の日付を配列で返す
 	public function ymdMonthArray($ym = null){
-		if($ym){
-			$year = substr($ym, 0, 4);
-			$month = substr($ym, 4, 2);
-		}else{
-			$year = date('Y');
-			$month = date('m');	
-		}
-		$firstDate = date('Y-m-d', strtotime('first day of ' . $year.'-'.$month));
-		$lastDate = date('Y-m-d', strtotime('last day of ' . $year.'-'.$month));
-		$start = strtotime($firstDate);
-		$end = strtotime($lastDate);
-
+		$start = strtotime($this->firstDate($ym));
+		$end = strtotime($this->lastDate($ym));
 		$ret = array();
 		$temp = $end;
 		while($temp >= $start){
@@ -526,6 +517,32 @@ class Call_Center extends AppModel{
 		}// end while
 		sort($ret);
 		return $ret;
+	}
+	
+	//指定月の最初の日をY-m-dで返す
+	public function firstDate($ym = null){
+		if($ym){
+			$year = substr($ym, 0, 4);
+			$month = substr($ym, 4, 2);
+		}else{
+			$year = date('Y');
+			$month = date('m');	
+		}
+		$firstDate = date('Y-m-d', strtotime('first day of ' . $year.'-'.$month));
+		return $firstDate;
+	}
+	
+	//指定月の最後の日をY-m-dで返す
+	public function lastDate($ym = null){
+		if($ym){
+			$year = substr($ym, 0, 4);
+			$month = substr($ym, 4, 2);
+		}else{
+			$year = date('Y');
+			$month = date('m');	
+		}
+		$lastDate = date('Y-m-d', strtotime('last day of ' . $year.'-'.$month));
+		return $lastDate;
 	}
 	
 	//http://qiita.com/kakk_a/items/19e4eeb5a6bca36bd51a
