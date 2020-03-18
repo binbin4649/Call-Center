@@ -2,7 +2,7 @@
 require_once('VoiceText.php');
 require_once(dirname(__FILE__).'/../autoload.php');
 use Twilio\Rest\Client;
-use Twilio\Twiml;
+use Twilio\TwiML\VoiceResponse;
 App::import('Model', 'AppModel');
 
 class Call_Center extends AppModel{
@@ -30,7 +30,8 @@ class Call_Center extends AppModel{
 	
 	
 	public function basicResponse(){
-		$response = new Twiml;
+		//$response = new VoiceResponse;
+		$response = new VoiceResponse;
 		$text = $this->text1;
 		if(!empty($this->text2)) $text .= $this->text2;
 		if(!empty($this->text3)) $text .= $this->text3;
@@ -47,7 +48,7 @@ class Call_Center extends AppModel{
 	}
 	
 	public function basicResponse2(){
-		$response = new Twiml;
+		$response = new VoiceResponse;
 		$datetext = date("n月d日");
 		$timetext = date("H時i分");
 		$gather = $response->gather(array(
@@ -74,7 +75,7 @@ class Call_Center extends AppModel{
 	}
 	
 	public function premiumResponse2(){
-		$response = new Twiml;
+		$response = new VoiceResponse;
 		$datetext = date("n月d日");
 		$timetext = date("H時i分");
 		$gather = $response->gather(array(
@@ -102,7 +103,7 @@ class Call_Center extends AppModel{
 	}
 	
 	public function premiumResponse3(){
-		$response = new Twiml;
+		$response = new VoiceResponse;
 		$gather = $response->gather(array(
 			'numDigits' => 1,
 			'timeout' => 2,
@@ -124,7 +125,7 @@ class Call_Center extends AppModel{
 	}
 	
 	public function confResponse(){
-		$response = new Twiml;
+		$response = new VoiceResponse;
 		$gather = $response->gather(array(
 			'numDigits' => 2,
 			'timeout' => 10,
@@ -149,7 +150,7 @@ class Call_Center extends AppModel{
 	
 	// Nos number_only用
 	public function longConfResponse(){
-		$response = new Twiml;
+		$response = new VoiceResponse;
 		if(empty($this->callId) && empty($this->planOrder)){
 			$action_url = $this->responsePath;
 		}elseif(empty($this->callId) && !empty($this->planOrder)){
@@ -180,7 +181,7 @@ class Call_Center extends AppModel{
 	}
 	
 	public function onceResponse(){
-		$response = new Twiml;
+		$response = new VoiceResponse;
 		$text = $this->text1;
 		if(!empty($this->text2)) $text .= $this->text2;
 		if(!empty($this->locate)){
@@ -200,7 +201,7 @@ class Call_Center extends AppModel{
 	}
 	
 	public function noResponse(){
-		$response = new Twiml;
+		$response = new VoiceResponse;
 		$gather = $response->gather(array(
 			'timeout' => 1,
 		));
