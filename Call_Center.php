@@ -30,7 +30,6 @@ class Call_Center extends AppModel{
 	
 	
 	public function basicResponse(){
-		//$response = new VoiceResponse;
 		$response = new VoiceResponse;
 		$text = $this->text1;
 		if(!empty($this->text2)) $text .= $this->text2;
