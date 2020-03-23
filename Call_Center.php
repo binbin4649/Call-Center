@@ -353,6 +353,38 @@ class Call_Center extends AppModel{
 		return $log_data;
 	}
 	
+	// ログ組立 簡易版
+	public function simpleLogAssembly($call){
+		if($call['status'] == 'up'){
+			$wake = '起床確認済み。';
+		}else{
+			$wake = '起床未確認、確認できませんでした。';
+		}
+		$log_data = $wake."\n";
+		if(!empty($call['callsid1'])){
+			$log_data .= $this->getTwilioLog($call['callsid1']);
+		}
+		if(!empty($call['callsid2'])){
+			$log_data .= $this->getTwilioLog($call['callsid2']);
+		}
+		if(!empty($call['callsid3'])){
+			$log_data .= $this->getTwilioLog($call['callsid3']);
+		}
+		if(!empty($call['callsid4'])){
+			$log_data .= $this->getTwilioLog($call['callsid4']);
+		}
+		if(!empty($call['callsid5'])){
+			$log_data .= $this->getTwilioLog($call['callsid5']);
+		}
+		if(!empty($call['callsid6'])){
+			$log_data .= $this->getTwilioLog($call['callsid6']);
+		}
+		if(!empty($call['callsid7'])){
+			$log_data .= $this->getTwilioLog($call['callsid7']);
+		}
+		return $log_data;
+	}
+	
 	public function tenki($city_number){
 		$ret = $this->weatherYumake($city_number);
 		if($ret == false){
