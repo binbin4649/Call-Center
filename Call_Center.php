@@ -356,12 +356,21 @@ class Call_Center extends AppModel{
 	public function tenki($city_number){
 		$ret = $this->weatherYumake($city_number);
 		if($ret == false){
-			$ret = $this->weatherLivedoor($city_number);
+			//$ret = $this->weatherLivedoor($city_number);
+			$ret = $this->weather5enn($city_number);
 		}elseif($ret == false){
 			$ret['city_name'] = '天気予報停止中。';
 			$ret['description'] = '申し訳ありません。';
 		}
 		return $ret;
+	}
+	
+	public function weather5enn($city_number){
+		$url = 'https://5enn.jp/enn/enn_calls/tenki/'.$city_number;
+		$json = file_get_contents($url);
+		$json = mb_convert_encoding($json, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
+		$arr = json_decode($json, true);
+		return $arr;
 	}
 	
 	public function weatherYumake($city_number){
