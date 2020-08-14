@@ -444,20 +444,8 @@ class Call_Center extends AppModel{
 	
 	//天気予報の地域を返す
 	public function weatherArea(){
-		$area = Cache::read('weather_area', 'MccCache');
-		if(!$area){
-			$xml = simplexml_load_file('http://weather.livedoor.com/forecast/rss/primary_area.xml');
-			$rss = $xml->xpath('/rss/channel/ldWeather:source/pref');
-			$area = [];
-			foreach($rss as $value){
-				$cate = (string)$value->attributes()->title;
-				foreach($value->city as $city){
-					$area[$cate][(string)$city->attributes()->id] = (string)$city->attributes()->title;
-				}
-			}
-			Cache::write('weather_area', $area, 'MccCache');
-		}
-		return $area;
+		include_once('area.php');
+		return $weather_area;
 	}
 	
 	//時間切り捨て、10分単位
