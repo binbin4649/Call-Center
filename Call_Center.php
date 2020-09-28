@@ -396,7 +396,7 @@ class Call_Center extends AppModel{
 					$ret['city_name'] = $area['areaName'].'、';
 					$ret['description'] .= $area['forecastDateName'][0].'は、';
 					$ret['description'] .= $area['weather'][0].'、';
-					$ret['description'] .= $area['windDirection'][0].'、';
+					//$ret['description'] .= $area['windDirection'][0].'、';
 					$ret['description'] .= '降水確率、';
 					$precipitationName0 = str_replace('００', '０', $area['precipitationName'][0]);
 					$precipitationName1 = str_replace('００', '０', $area['precipitationName'][1]);
