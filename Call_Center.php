@@ -395,11 +395,14 @@ class Call_Center extends AppModel{
 				if($area['areaCode'] == $city_number){
 					$ret['city_name'] = $area['areaName'].'、';
 					$ret['description'] .= $area['forecastDateName'][0].'は、';
-					$ret['description'] .= $area['weather'][0].'、';
+					//$ret['description'] .= $area['weather'][0].'、';
+					$ret['description'] .= $this->weatherRep($area['weather'][0]).'、';
 					//$ret['description'] .= $area['windDirection'][0].'、';
 					$ret['description'] .= '降水確率、';
-					$precipitationName0 = str_replace('００', '０', $area['precipitationName'][0]);
-					$precipitationName1 = str_replace('００', '０', $area['precipitationName'][1]);
+					//$precipitationName0 = str_replace('００', '０', $area['precipitationName'][0]);
+					//$precipitationName1 = str_replace('００', '０', $area['precipitationName'][1]);
+					$precipitationName0 = $this->precipitationNameRep($area['precipitationName'][0]);
+					$precipitationName1 = $this->precipitationNameRep($area['precipitationName'][1]);
 					$ret['description'] .= $precipitationName0.$area['precipitation'][0].'パーセント、';
 					$ret['description'] .= $precipitationName1.$area['precipitation'][1].'パーセント、';
 					
@@ -423,6 +426,27 @@ class Call_Center extends AppModel{
 			Cache::write('weather_yumake'.$city_number, $ret, 'MccCacheOneHour');
 		}
 		return $ret;
+	}
+	
+	public function precipitationNameRep($name){
+		$name = str_replace('００', '０', $name);
+		$name = str_replace('０１', '１', $name);
+		$name = str_replace('０２', '２', $name);
+		$name = str_replace('０３', '３', $name);
+		$name = str_replace('０４', '４', $name);
+		$name = str_replace('０５', '５', $name);
+		$name = str_replace('０６', '６', $name);
+		$name = str_replace('０７', '７', $name);
+		$name = str_replace('０８', '８', $name);
+		$name = str_replace('０９', '９', $name);
+		return $name;
+	}
+	
+	public function weatherRep($name){
+		//$name = str_replace('晴れ後くもり', '晴れのちくもり', $name);
+		//$name = str_replace('くもり後晴れ', 'くもりのち晴れ', $name);
+		$name = str_replace('後', 'のち', $name);
+		return $name;
 	}
 	
 	public function weatherLivedoor($city_number){
